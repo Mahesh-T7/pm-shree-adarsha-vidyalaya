@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(uuid())
+  username     String     @unique
+  email        String     @unique
+  passwordHash String
+  fullName     String
+  role         String     @default("TEACHER") // SUPER_ADMIN, HEAD_MASTER, TEACHER, CONTENT_EDITOR, VIEWER
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  auditLogs    AuditLog[]
+}
+
+model BlogPost {
+  id          Int       @id @default(autoincrement())
+  title       String
+  slug        String    @unique
+  excerpt     String
+  content     String
+  image       String    @default("/school-banner.jpg")
+  category    String    @default("Latest")
+  author      String    @default("Principal / HM")
+  readTime    String    @default("5 min read")
+  status      String    @default("PUBLISHED") // DRAFT, PUBLISHED, ARCHIVED
+  featured    Boolean   @default(false)
+  publishedAt DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Notice {
+  id        Int       @id @default(autoincrement())
+  type      String    @default("news") // order, event, news, photo, video
+  title     String
+  content   String
+  date      String
+  tag       String    @default("ಪ್ರಕಟಣೆ")
+  author    String    @default("ಮುಖ್ಯಗುರುಗಳು (Head Master)")
+  mediaUrl  String?
+  videoUrl  String?
+  isPinned  Boolean   @default(false)
+  status    String    @default("PUBLISHED") // DRAFT, PUBLISHED, EXPIRED
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Achievement {
+  id         Int      @id @default(autoincrement())
+  name       String
+  fatherName String?
+  htNo       String?
+  score      String   @default("600/625")
+  marks      Int      @default(600)
+  percentage String   @default("96.00%")
+  rank       String   @default("RANK 1")
+  photo      String   @default("/students/student-1.jpg")
+  avatar     String?
+  year       String   @default("2025-26")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model GalleryAlbum {
+  id          String        @id @default(uuid())
+  title       String
+  description String?
+  coverImage  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  images      GalleryItem[]
+}
+
+model GalleryItem {
+  id          Int           @id @default(autoincrement())
+  title       String
+  category    String        @default("Campus") // Campus, Attractions & Heritage, Labs, Academics, Sports, Events
+  tag         String        @default("School Event")
+  img         String
+  description String?
+  albumId     String?
+  album       GalleryAlbum? @relation(fields: [albumId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model SiteSetting {
+  id        String   @id // key: e.g. "about", "facilities", "highSchool", "uniforms", "authorMessages", "navItems", "categories", "headlines", "contact"
+  value     String // JSON serialized configuration
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+}
+
+model Admission {
+  id          Int      @id @default(autoincrement())
+  studentName String
+  dob         String
+  parentName  String
+  phone       String
+  state       String   @default("Karnataka")
+  board       String   @default("CBSE")
+  status      String   @default("PENDING") // PENDING, REVIEWED, CONTACTED, ADMITTED, REJECTED
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Enquiry {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String
+  grade     String
+  message   String?
+  status    String   @default("UNREAD") // UNREAD, CONTACTED, RESOLVED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, FAILED_LOGIN
+  entity    String // BlogPost, Notice, Achievement, GalleryItem, SiteSetting, Auth
+  entityId  String?
+  details   String? // JSON or description
+  ipAddress String?
+  status    String   @default("SUCCESS") // SUCCESS, FAILURE
+  createdAt DateTime @default(now())
+}
+
+model MediaFile {
+  id           String   @id @default(uuid())
+  filename     String   @unique
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  uploadedBy   String?
+  createdAt    DateTime @default(now())
+}
