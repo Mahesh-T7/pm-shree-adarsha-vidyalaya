@@ -7,8 +7,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push",
+    "build": "node scripts/dbGenerate.js && node scripts/dbPush.js && node scripts/migrateSeedContent.js",
+    "prisma:generate": "node scripts/dbGenerate.js",
+    "prisma:push": "node scripts/dbPush.js",
     "migrate:seed": "node scripts/migrateSeedContent.js"
   },
   "dependencies": {
